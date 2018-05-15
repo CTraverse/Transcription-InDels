@@ -12,6 +12,9 @@ from sys import argv
 
 script, coding_seq, ref, deletions, threshold, outfile = argv
 
+### This script generates a simulated set of deletions sampled across the transcriptome.
+### It first tabulates the overall transcript expression level of each gene across the genome
+### It then randomly samples the genome, weighted by its expression level and generates a deletion randomly within the gene
 
 deletion_list = list(open(deletions, "r"))
 genome = list(SeqIO.parse(coding_seq, "fasta"))
@@ -24,7 +27,7 @@ genome_cov = 0
 
 master_list = []
 
-
+## Tabulate the overall per gene coverage 
 for gene in genome:
     
     #Determine the start and end of the current gene and determine if current gene is reverse complemented relative to reference  
@@ -62,10 +65,9 @@ for gene in genome:
     if per_base_cov == 0:
         pass
     else:
-        master_list.append( [per_gene_cov, str(gene.seq), gene_start, correct_orientation])
+        master_list.append([per_gene_cov, str(gene.seq), gene_start, correct_orientation])
     
-
-    
+#Randomly sample the genome, weighted by gene coverage and generate deletions
 random_deletions = []
 j = len(deletion_list)
 for i in range(2):
@@ -76,7 +78,8 @@ for i in range(2):
         j -= 1
         random_gene = randint(1, per_gene_cov)
         for gene in master_list:
-    
+            
+            ## This is a special case for the first gene in the genome list
             if int(gene[0]) == int(master_list[0][0]):
                 if 0 < random_gene <= gene[0]:
     
